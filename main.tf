@@ -2,17 +2,14 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Obter informações sobre o cluster EKS existente
 data "aws_eks_cluster" "selected_eks" {
   name = var.eks_cluster_name  # Nome do cluster EKS
 }
 
-# Obter informações sobre a VPC associada ao cluster EKS
 data "aws_vpc" "eks_vpc" {
   id = data.aws_eks_cluster.selected_eks.vpc_config[0].vpc_id
 }
 
-# Obter as subnets associadas ao cluster EKS
 data "aws_subnets" "eks_subnets" {
   filter {
     name   = "vpc-id"
@@ -20,10 +17,8 @@ data "aws_subnets" "eks_subnets" {
   }
 }
 
-# Obter zonas de disponibilidade
 data "aws_availability_zones" "available" {}
 
-# Criar um grupo de subnets para o DocumentDB usando subnets da VPC do EKS
 resource "aws_docdb_subnet_group" "docdb_subnet_group" {
   name       = "lanchonete-docdb-subnet-group"
   subnet_ids = data.aws_subnets.eks_subnets.ids
@@ -33,7 +28,6 @@ resource "aws_docdb_subnet_group" "docdb_subnet_group" {
   }
 }
 
-# Security Group para o DocumentDB, usando a VPC do EKS
 resource "aws_security_group" "docdb_sg" {
   vpc_id = data.aws_vpc.eks_vpc.id
 
@@ -56,7 +50,6 @@ resource "aws_security_group" "docdb_sg" {
   }
 }
 
-# Cluster DocumentDB
 resource "aws_docdb_cluster" "docdb_cluster" {
   cluster_identifier = "lanchonete-docdb-cluster"
   master_username    = var.docdb_username
@@ -71,7 +64,6 @@ resource "aws_docdb_cluster" "docdb_cluster" {
   }
 }
 
-# Instância DocumentDB
 resource "aws_docdb_cluster_instance" "docdb_instance" {
   count              = 1
   identifier         = "lanchonete-docdb-instance-${count.index}"
