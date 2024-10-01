@@ -29,6 +29,6 @@ jobs:
       run: terraform init
 
     - name: Terraform Apply
-      run: terraform destroy -auto-approve
+      run: terraform apply -auto-approve
       env:
         TF_VAR_docdb_password: ${{ secrets.DOCDB_PASSWORD }}
